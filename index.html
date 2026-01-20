@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobPortal India - Find Your Dream Job</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+        }
+        
+        .blurry-office-bg {
+            background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.7;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+        }
+        
+        .job-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #10b981;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+        }
+        
+        .saved-job {
+            border-left-color: #3b82f6;
+        }
+        
+        .green-gradient {
+            background: linear-gradient(135deg, #d1fae5 0%, #e0f2fe 100%);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .error-input {
+            border-color: #ef4444 !important;
+        }
+        
+        .success-message {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .success-message.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .apply-form-container {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .resume-upload-container {
+            border: 2px dashed #10b981;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .resume-upload-container:hover {
+            background-color: #f0fdf9;
+        }
+        
+        .resume-upload-container.dragover {
+            background-color: #d1fae5;
+            border-color: #059669;
+        }
+        
+        .filter-section {
+            transition: all 0.3s ease;
+        }
+        
+        .filter-section.collapsed {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        
+        .filter-section.expanded {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        .salary-range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #d1fae5;
+            outline: none;
+        }
+        
+        .salary-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #059669;
+            cursor: pointer;
+        }
+        
+        .salary-range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #059669;
+            cursor: pointer;
+        }
+        
+        .indian-flag-bg {
+            background: linear-gradient(135deg, #ff9933 0%, #ffffff 50%, #138808 100%);
+        }
+        
+        .scrollbar-thin {
+            scrollbar-width: thin;
+            scrollbar-color: #10b981 #f1f5f9;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #10b981;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Background illustration with blur effect -->
+    <div class="blurry-office-bg"></div>
+    
+    <!-- Header/Navigation -->
+    <header class="sticky top-0 z-50 shadow-sm">
+        <nav class="green-gradient py-4 px-6">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <div class="relative">
+                        <i class="fas fa-briefcase text-3xl text-emerald-600"></i>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 indian-flag-bg rounded-full border border-white"></div>
+                    </div>
+                    <h1 class="text-2xl font-bold text-emerald-800">JobPortal<span class="text-sky-600">India</span></h1>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="text-emerald-700 hover:text-emerald-900 font-medium">Home</a>
+                    <a href="#jobs" class="text-emerald-700 hover:text-emerald-900 font-medium">Browse Jobs</a>
+                    <a href="#saved" class="text-emerald-700 hover:text-emerald-900 font-medium">Saved Jobs</a>
+                    <button id="savedJobsBtn" class="relative">
+                        <i class="fas fa-bookmark text-xl text-sky-600"></i>
+                        <span id="savedCount" class="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="py-12 px-6">
+        <div class="container mx-auto">
+            <div class="glass-effect max-w-4xl mx-auto p-8 md:p-12">
+                <div class="text-center">
+                    <h2 class="text-4xl md:text-5xl font-bold text-emerald-900 mb-4">Find Your Dream Job in India</h2>
+                    <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">Discover thousands of job opportunities from top Indian companies. Save your favorites and apply with ease.</p>
+                    
+                    <!-- Search Bar -->
+                    <div class="flex flex-col md:flex-row gap-4 mb-8">
+                        <div class="flex-grow">
+                            <input type="text" id="searchInput" placeholder="Job title, keywords, or company" class="w-full px-6 py-4 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent">
+                        </div>
+                        <button id="searchBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-4 px-8 rounded-lg transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-search mr-2"></i> Search Jobs
+                        </button>
+                    </div>
+                    
+                    <!-- Advanced Filters Toggle -->
+                    <div class="mb-6">
+                        <button id="toggleFiltersBtn" class="text-emerald-700 hover:text-emerald-900 font-medium flex items-center mx-auto">
+                            <i class="fas fa-filter mr-2"></i>
+                            <span>Advanced Filters</span>
+                            <i id="filterToggleIcon" class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Filter options - Initially hidden -->
+                    <div id="filterSection" class="filter-section collapsed">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            <!-- Location Filter -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                                <select id="locationFilter" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent">
+                                    <option value="">All Locations</option>
+                                    <option value="bangalore">Bangalore</option>
+                                    <option value="delhi">Delhi/NCR</option>
+                                    <option value="mumbai">Mumbai</option>
+                                    <option value="hyderabad">Hyderabad</option>
+                                    <option value="chennai">Chennai</option>
+                                    <option value="pune">Pune</option>
+                                    <option value="kolkata">Kolkata</option>
+                                    <option value="remote">Remote (All India)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Work Mode Filter -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Work Mode</label>
+                                <select id="workModeFilter" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent">
+                                    <option value="">All Work Modes</option>
+                                    <option value="office">Office</option>
+                                    <option value="remote">Remote</option>
+                                    <option value="hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Experience Filter -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Experience</label>
+                                <select id="experienceFilter" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent">
+                                    <option value="">All Experience Levels</option>
+                                    <option value="fresher">Fresher (0-1 years)</option>
+                                    <option value="1-3">1-3 years</option>
+                                    <option value="3-6">3-6 years</option>
+                                    <option value="6-10">6-10 years</option>
+                                    <option value="10+">10+ years</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Category Filter -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <select id="categoryFilter" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent">
+                                    <option value="">All Categories</option>
+                                    <option value="it">IT & Software</option>
+                                    <option value="bpo">BPO & Customer Service</option>
+                                    <option value="sales">Sales & Business Development</option>
+                                    <option value="finance">Finance & Accounting</option>
+                                    <option value="marketing">Marketing & Digital Marketing</option>
+                                    <option value="hr">HR & Recruitment</option>
+                                    <option value="operations">Operations</option>
+                                    <option value="healthcare">Healthcare</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Salary Range Filter -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Salary Range (₹ LPA)</label>
+                            <div class="flex items-center space-x-4">
+                                <input type="range" id="salaryRange" min="0" max="50" value="50" step="1" class="salary-range-slider">
+                                <div class="text-emerald-700 font-medium">
+                                    <span id="salaryMin">0</span> - <span id="salaryMax">50</span> LPA
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button id="clearFiltersBtn" class="text-emerald-700 hover:text-emerald-900 font-medium flex items-center">
+                                <i class="fas fa-redo mr-2"></i> Clear Filters
+                            </button>
+                            <button id="applyFiltersBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Main Content -->
+    <main class="py-8 px-6">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Job Listings -->
+                <div class="lg:col-span-2">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="jobs" class="text-2xl font-bold text-emerald-900">Latest Job Listings</h2>
+                        <p class="text-gray-600"><span id="jobCount">8</span> jobs found</p>
+                    </div>
+                    
+                    <!-- Job Listings Container -->
+                    <div id="jobListings" class="space-y-6 scrollbar-thin">
+                        <!-- Job cards will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Saved Jobs Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect p-6 sticky top-24">
+                        <div class="flex items-center mb-6">
+                            <i class="fas fa-bookmark text-2xl text-sky-600 mr-3"></i>
+                            <h2 id="saved" class="text-xl font-bold text-emerald-900">Saved Jobs</h2>
+                        </div>
+                        
+                        <div id="savedJobsContainer" class="space-y-4 max-h-96 overflow-y-auto scrollbar-thin">
+                            <p class="text-gray-500 text-center py-4">No saved jobs yet. Click the bookmark icon on any job to save it.</p>
+                            <!-- Saved jobs will be inserted here by JavaScript -->
+                        </div>
+                        
+                        <div class="mt-8 pt-6 border-t border-emerald-100">
+                            <h3 class="font-bold text-emerald-800 mb-3">Job Search Tips for India</h3>
+                            <ul class="space-y-2 text-sm text-gray-600">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-emerald-500 mt-1 mr-2"></i>
+                                    <span>Customize your resume for each job application</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-emerald-500 mt-1 mr-2"></i>
+                                    <span>Highlight relevant skills and certifications</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-emerald-500 mt-1 mr-2"></i>
+                                    <span>Prepare for common interview questions in your industry</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check text-emerald-500 mt-1 mr-2"></i>
+                                    <span>Follow up after interviews with a thank-you email</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Job Details Modal -->
+    <div id="jobDetailsModal" class="modal-overlay">
+        <div class="modal-content w-11/12 md:w-3/4 lg:w-1/2">
+            <div class="glass-effect p-6 md:p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 id="modalJobTitle" class="text-2xl font-bold text-emerald-900"></h3>
+                        <p id="modalJobCompany" class="text-lg text-gray-600"></p>
+                    </div>
+                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="flex items-center">
+                        <i class="fas fa-map-marker-alt text-emerald-500 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Location</p>
+                            <p id="modalJobLocation" class="font-medium"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-emerald-500 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Job Type</p>
+                            <p id="modalJobType" class="font-medium"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-rupee-sign text-emerald-500 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Salary</p>
+                            <p id="modalJobSalary" class="font-medium"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-briefcase text-emerald-500 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-gray-500">Experience</p>
+                            <p id="modalJobExperience" class="font-medium"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h4 class="text-xl font-bold text-emerald-800 mb-3">Job Description</h4>
+                    <div id="modalJobDescription" class="text-gray-700"></div>
+                </div>
+                
+                <div class="flex justify-between">
+                    <button id="saveJobBtn" class="bg-sky-100 hover:bg-sky-200 text-sky-700 font-medium py-3 px-6 rounded-lg transition duration-300">
+                        <i class="far fa-bookmark mr-2"></i> Save Job
+                    </button>
+                    <button id="applyNowBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300">
+                        Apply Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Apply Form Modal -->
+    <div id="applyFormModal" class="modal-overlay">
+        <div class="modal-content w-11/12 md:w-3/4 lg:w-1/2">
+            <div class="glass-effect p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-emerald-900">Apply for <span id="applyJobTitle"></span></h3>
+                    <button id="closeApplyModalBtn" class="text-gray-500 hover:text-gray-700 text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Success Message -->
+                <div id="successMessage" class="success-message mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-emerald-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-medium text-emerald-800">Application submitted successfully!</p>
+                            <p class="text-sm text-emerald-600">We'll review your application and get back to you soon.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resume Upload Section -->
+                <div class="mb-6">
+                    <div class="resume-upload-container" id="resumeDropZone">
+                        <i class="fas fa-file-upload text-4xl text-emerald-500 mb-3"></i>
+                        <h4 class="font-bold text-emerald-800 mb-1">Upload Resume to Auto-fill</h4>
+                        <p class="text-gray-600 mb-4">Drag & drop your resume file here or click to browse</p>
+                        <p class="text-sm text-gray-500">Supported formats: PDF, DOC, DOCX (Max 5MB)</p>
+                        <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" class="hidden">
+                        <button id="browseResumeBtn" class="mt-4 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium py-2 px-4 rounded-lg transition duration-300">
+                            <i class="fas fa-search mr-2"></i> Browse Files
+                        </button>
+                    </div>
+                    <div class="text-sm text-gray-500 mt-2 flex items-center">
+                        <i class="fas fa-info-circle text-emerald-500 mr-1"></i>
+                        <span>Upload your resume to automatically fill the form below</span>
+                    </div>
+                </div>
+                
+                <!-- Apply Form -->
+                <form id="applyForm" class="apply-form-container scrollbar-thin">
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="firstName" class="block text-gray-700 mb-2">First Name *</label>
+                                <input type="text" id="firstName" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                                <div class="text-sm text-red-500 mt-1 hidden" id="firstNameError">Please enter your first name</div>
+                            </div>
+                            <div>
+                                <label for="lastName" class="block text-gray-700 mb-2">Last Name *</label>
+                                <input type="text" id="lastName" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                                <div class="text-sm text-red-500 mt-1 hidden" id="lastNameError">Please enter your last name</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-gray-700 mb-2">Email Address *</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                            <div class="text-sm text-red-500 mt-1 hidden" id="emailError">Please enter a valid email address</div>
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-gray-700 mb-2">Phone Number *</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                            <div class="text-sm text-red-500 mt-1 hidden" id="phoneError">Please enter a valid 10-digit phone number</div>
+                        </div>
+                        
+                        <div>
+                            <label for="currentLocation" class="block text-gray-700 mb-2">Current Location (City) *</label>
+                            <input type="text" id="currentLocation" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                        </div>
+                        
+                        <div>
+                            <label for="totalExperience" class="block text-gray-700 mb-2">Total Experience (Years) *</label>
+                            <select id="totalExperience" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                                <option value="">Select Experience</option>
+                                <option value="fresher">Fresher (0-1 years)</option>
+                                <option value="1-3">1-3 years</option>
+                                <option value="3-6">3-6 years</option>
+                                <option value="6-10">6-10 years</option>
+                                <option value="10+">10+ years</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="currentCTC" class="block text-gray-700 mb-2">Current CTC (₹ LPA)</label>
+                            <input type="text" id="currentCTC" placeholder="e.g., 8.5" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label for="expectedCTC" class="block text-gray-700 mb-2">Expected CTC (₹ LPA) *</label>
+                            <input type="text" id="expectedCTC" placeholder="e.g., 12" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                        </div>
+                        
+                        <div>
+                            <label for="noticePeriod" class="block text-gray-700 mb-2">Notice Period *</label>
+                            <select id="noticePeriod" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" required>
+                                <option value="">Select Notice Period</option>
+                                <option value="immediate">Immediate Joiner</option>
+                                <option value="15">15 Days</option>
+                                <option value="30">30 Days</option>
+                                <option value="60">60 Days</option>
+                                <option value="90">90 Days</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="skills" class="block text-gray-700 mb-2">Key Skills *</label>
+                            <textarea id="skills" rows="2" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" placeholder="e.g., JavaScript, React, Node.js, Python" required></textarea>
+                        </div>
+                        
+                        <div>
+                            <label for="coverLetter" class="block text-gray-700 mb-2">Cover Letter</label>
+                            <textarea id="coverLetter" rows="4" class="w-full px-4 py-3 rounded-lg border border-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent" placeholder="Tell us why you're a good fit for this position..."></textarea>
+                        </div>
+                        
+                        <!-- Resume file input (hidden, will be auto-filled from upload) -->
+                        <input type="hidden" id="resume" value="">
+                    </div>
+                    
+                    <div class="mt-8 flex justify-end space-x-4">
+                        <button type="button" id="cancelApplyBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition duration-300">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300">
+                            Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="mt-12 py-8 px-6 bg-emerald-900 text-white">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <div class="relative">
+                            <i class="fas fa-briefcase text-3xl text-emerald-300"></i>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 indian-flag-bg rounded-full border border-white"></div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">JobPortal<span class="text-sky-300">India</span></h2>
+                    </div>
+                    <p class="mt-2 text-emerald-200">Your career journey starts here.</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-emerald-200">© 2023 JobPortal India. All rights reserved.</p>
+                    <p class="text-emerald-200 mt-1">Made with <i class="fas fa-heart text-red-400"></i> for Indian job seekers</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Job data for India
+        const jobs = [
+            {
+                id: 1,
+                title: "Frontend Developer (React)",
+                company: "TechMahindra",
+                location: "Bangalore, Karnataka",
+                type: "Full-time",
+                workMode: "Hybrid",
+                salary: "₹8,00,000 - ₹12,00,000",
+                experience: "3-6 years",
+                category: "it",
+                description: "<p>We are looking for a skilled Frontend Developer with React experience to join our team in Bangalore. You will be responsible for building responsive web applications for our clients.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Develop user-facing features using React.js and Next.js</li><li>Collaborate with UI/UX designers to implement designs</li><li>Optimize applications for maximum performance</li><li>Write clean, maintainable, and efficient code</li><li>Participate in code reviews and agile ceremonies</li></ul>",
+                posted: "2 days ago"
+            },
+            {
+                id: 2,
+                title: "Sales Executive",
+                company: "Reliance Retail",
+                location: "Mumbai, Maharashtra",
+                type: "Full-time",
+                workMode: "Office",
+                salary: "₹4,00,000 - ₹6,00,000 + Incentives",
+                experience: "1-3 years",
+                category: "sales",
+                description: "<p>We're seeking a Sales Executive to drive retail sales in our Mumbai stores. The ideal candidate should have excellent communication skills and a passion for sales.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Achieve monthly sales targets</li><li>Provide excellent customer service</li><li>Maintain product knowledge and promotions</li><li>Assist in visual merchandising</li><li>Process sales transactions accurately</li></ul>",
+                posted: "1 day ago"
+            },
+            {
+                id: 3,
+                title: "Digital Marketing Manager",
+                company: "Nykaa",
+                location: "Remote",
+                type: "Full-time",
+                workMode: "Remote",
+                salary: "₹10,00,000 - ₹15,00,000",
+                experience: "6-10 years",
+                category: "marketing",
+                description: "<p>We're hiring a Digital Marketing Manager to lead our online marketing efforts. The ideal candidate has experience in e-commerce and performance marketing.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Develop and execute digital marketing strategies</li><li>Manage SEM, SEO, social media, and email campaigns</li><li>Analyze campaign performance and optimize ROI</li><li>Lead a team of digital marketing executives</li><li>Collaborate with cross-functional teams</li></ul>",
+                posted: "3 days ago"
+            },
+            {
+                id: 4,
+                title: "HR Recruiter",
+                company: "Infosys",
+                location: "Pune, Maharashtra",
+                type: "Full-time",
+                workMode: "Office",
+                salary: "₹5,00,000 - ₹8,00,000",
+                experience: "3-6 years",
+                category: "hr",
+                description: "<p>We are seeking an HR Recruiter to manage end-to-end recruitment for our Pune office. You will source, screen, and hire candidates for various IT positions.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Source candidates through various channels</li><li>Conduct initial screening interviews</li><li>Coordinate interview schedules</li><li>Manage candidate communication</li><li>Maintain recruitment databases</li></ul>",
+                posted: "5 days ago"
+            },
+            {
+                id: 5,
+                title: "Customer Service Executive",
+                company: "Amazon India",
+                location: "Hyderabad, Telangana",
+                type: "Full-time",
+                workMode: "Office",
+                salary: "₹3,00,000 - ₹4,50,000",
+                experience: "fresher",
+                category: "bpo",
+                description: "<p>Join our customer service team as a Customer Service Executive. You'll be responsible for addressing customer queries and providing excellent service.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Handle customer inquiries via phone, email, and chat</li><li>Resolve customer issues efficiently</li><li>Maintain customer satisfaction ratings</li><li>Document customer interactions</li><li>Upsell products when appropriate</li></ul>",
+                posted: "1 week ago"
+            },
+            {
+                id: 6,
+                title: "Backend Developer (Node.js)",
+                company: "Flipkart",
+                location: "Bangalore, Karnataka",
+                type: "Full-time",
+                workMode: "Hybrid",
+                salary: "₹12,00,000 - ₹18,00,000",
+                experience: "6-10 years",
+                category: "it",
+                description: "<p>We're looking for a Senior Backend Developer to build and maintain our server-side applications. You'll work with Node.js, MongoDB, and AWS technologies.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Design and develop RESTful APIs</li><li>Optimize applications for performance and scalability</li><li>Implement security and data protection measures</li><li>Collaborate with frontend and DevOps teams</li><li>Mentor junior developers</li></ul>",
+                posted: "4 days ago"
+            },
+            {
+                id: 7,
+                title: "Financial Analyst",
+                company: "HDFC Bank",
+                location: "Delhi/NCR",
+                type: "Full-time",
+                workMode: "Office",
+                salary: "₹7,00,000 - ₹10,00,000",
+                experience: "3-6 years",
+                category: "finance",
+                description: "<p>We're seeking a Financial Analyst to provide financial planning and analysis for our banking division. You will work with accounting and management teams.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Analyze financial data and create models</li><li>Prepare reports and projections</li><li>Evaluate financial performance</li><li>Identify trends and recommend actions</li><li>Assist in budget preparation</li></ul>",
+                posted: "2 days ago"
+            },
+            {
+                id: 8,
+                title: "Operations Manager",
+                company: "Zomato",
+                location: "Gurgaon, Haryana",
+                type: "Full-time",
+                workMode: "Office",
+                salary: "₹9,00,000 - ₹14,00,000",
+                experience: "6-10 years",
+                category: "operations",
+                description: "<p>We're hiring an Operations Manager to oversee our food delivery operations in the Delhi/NCR region. You will ensure efficient and timely deliveries.</p><ul class='list-disc pl-5 mt-3 space-y-1'><li>Manage delivery partner operations</li><li>Optimize delivery routes and processes</li><li>Monitor performance metrics</li><li>Handle escalations and resolve issues</li><li>Implement process improvements</li></ul>",
+                posted: "6 days ago"
+            }
+        ];
+
+        // DOM Elements
+        const jobListingsContainer = document.getElementById('jobListings');
+        const savedJobsContainer = document.getElementById('savedJobsContainer');
+        const savedCountElement = document.getElementById('savedCount');
+        const jobCountElement = document.getElementById('jobCount');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        
+        // Filter elements
+        const locationFilter = document.getElementById('locationFilter');
+        const workModeFilter = document.getElementById('workModeFilter');
+        const experienceFilter = document.getElementById('experienceFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const salaryRange = document.getElementById('salaryRange');
+        const salaryMin = document.getElementById('salaryMin');
+        const salaryMax = document.getElementById('salaryMax');
+        const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+        const filterToggleIcon = document.getElementById('filterToggleIcon');
+        const filterSection = document.getElementById('filterSection');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        
+        const savedJobsBtn = document.getElementById('savedJobsBtn');
+        
+        // Modal Elements
+        const jobDetailsModal = document.getElementById('jobDetailsModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const applyFormModal = document.getElementById('applyFormModal');
+        const closeApplyModalBtn = document.getElementById('closeApplyModalBtn');
+        const cancelApplyBtn = document.getElementById('cancelApplyBtn');
+        const applyNowBtn = document.getElementById('applyNowBtn');
+        const saveJobBtn = document.getElementById('saveJobBtn');
+        const applyForm = document.getElementById('applyForm');
+        const successMessage = document.getElementById('successMessage');
+        const applyJobTitle = document.getElementById('applyJobTitle');
+        
+        // Resume upload elements
+        const resumeDropZone = document.getElementById('resumeDropZone');
+        const resumeUpload = document.getElementById('resumeUpload');
+        const browseResumeBtn = document.getElementById('browseResumeBtn');
+        
+        // Application form elements
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const currentLocationInput = document.getElementById('currentLocation');
+        const totalExperienceInput = document.getElementById('totalExperience');
+        const currentCTCInput = document.getElementById('currentCTC');
+        const expectedCTCInput = document.getElementById('expectedCTC');
+        const noticePeriodInput = document.getElementById('noticePeriod');
+        const skillsInput = document.getElementById('skills');
+        const coverLetterInput = document.getElementById('coverLetter');
+        const resumeInput = document.getElementById('resume');
+        
+        // State
+        let savedJobs = JSON.parse(localStorage.getItem('savedJobs')) || [];
+        let filteredJobs = [...jobs];
+        let currentJobId = null;
+        let salaryFilterValue = 50; // Default max salary in LPA
+
+        // Initialize the application
+        function init() {
+            renderJobListings();
+            updateSavedJobsDisplay();
+            updateSalaryDisplay();
+            attachEventListeners();
+        }
+
+        // Render job listings
+        function renderJobListings() {
+            jobListingsContainer.innerHTML = '';
+            
+            if (filteredJobs.length === 0) {
+                jobListingsContainer.innerHTML = `
+                    <div class="glass-effect p-8 text-center">
+                        <i class="fas fa-search text-4xl text-emerald-400 mb-4"></i>
+                        <h3 class="text-xl font-bold text-emerald-900 mb-2">No jobs found</h3>
+                        <p class="text-gray-600">Try adjusting your search filters or search terms</p>
+                        <button id="resetFilters" class="mt-4 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium py-2 px-4 rounded-lg transition duration-300">
+                            Reset All Filters
+                        </button>
+                    </div>
+                `;
+                jobCountElement.textContent = '0';
+                return;
+            }
+            
+            filteredJobs.forEach(job => {
+                const isSaved = savedJobs.includes(job.id);
+                const jobCard = document.createElement('div');
+                jobCard.className = `job-card glass-effect p-6 ${isSaved ? 'saved-job' : ''}`;
+                jobCard.innerHTML = `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="text-xl font-bold text-emerald-900">${job.title}</h3>
+                            <p class="text-lg text-gray-600">${job.company}</p>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="bg-emerald-100 text-emerald-800 text-xs font-medium px-3 py-1 rounded-full">${job.type}</span>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">${job.experience}</span>
+                                <span class="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full">${job.workMode}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-start md:items-end">
+                            <p class="text-lg font-bold text-emerald-700 mb-2">${job.salary}</p>
+                            <p class="text-gray-500 text-sm mb-3">${job.location}</p>
+                            <div class="flex space-x-3">
+                                <button class="view-details-btn text-emerald-600 hover:text-emerald-800 font-medium" data-id="${job.id}">
+                                    <i class="fas fa-eye mr-1"></i> View Details
+                                </button>
+                                <button class="save-job-btn ${isSaved ? 'text-sky-600' : 'text-gray-400'} hover:text-sky-600" data-id="${job.id}">
+                                    <i class="${isSaved ? 'fas' : 'far'} fa-bookmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                jobListingsContainer.appendChild(jobCard);
+            });
+            
+            jobCountElement.textContent = filteredJobs.length;
+        }
+
+        // Update saved jobs display
+        function updateSavedJobsDisplay() {
+            savedJobsContainer.innerHTML = '';
+            
+            if (savedJobs.length === 0) {
+                savedJobsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No saved jobs yet. Click the bookmark icon on any job to save it.</p>';
+                savedCountElement.textContent = '0';
+                return;
+            }
+            
+            savedCountElement.textContent = savedJobs.length;
+            
+            // Only show saved jobs that exist in our job listings
+            const savedJobsData = jobs.filter(job => savedJobs.includes(job.id));
+            
+            savedJobsData.forEach(job => {
+                const savedJobElement = document.createElement('div');
+                savedJobElement.className = 'saved-job glass-effect p-4';
+                savedJobElement.innerHTML = `
+                    <h4 class="font-bold text-emerald-900 truncate">${job.title}</h4>
+                    <p class="text-sm text-gray-600 truncate">${job.company}</p>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-xs font-medium text-emerald-600">${job.location.split(',')[0]}</span>
+                        <div class="flex space-x-2">
+                            <button class="view-saved-btn text-xs text-emerald-600 hover:text-emerald-800" data-id="${job.id}">View</button>
+                            <button class="remove-saved-btn text-xs text-red-500 hover:text-red-700" data-id="${job.id}">Remove</button>
+                        </div>
+                    </div>
+                `;
+                savedJobsContainer.appendChild(savedJobElement);
+            });
+        }
+
+        // Update salary display
+        function updateSalaryDisplay() {
+            salaryMax.textContent = salaryFilterValue;
+        }
+
+        // Filter jobs based on search and filters
+        function filterJobs() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const locationValue = locationFilter.value;
+            const workModeValue = workModeFilter.value;
+            const experienceValue = experienceFilter.value;
+            const categoryValue = categoryFilter.value;
+            
+            filteredJobs = jobs.filter(job => {
+                // Search term filter
+                const matchesSearch = searchTerm === '' || 
+                    job.title.toLowerCase().includes(searchTerm) || 
+                    job.company.toLowerCase().includes(searchTerm) ||
+                    job.description.toLowerCase().includes(searchTerm);
+                
+                // Location filter
+                const matchesLocation = locationValue === '' || 
+                    (locationValue === 'remote' && job.workMode === 'Remote') ||
+                    job.location.toLowerCase().includes(locationValue);
+                
+                // Work mode filter
+                const matchesWorkMode = workModeValue === '' || 
+                    job.workMode.toLowerCase() === workModeValue.toLowerCase();
+                
+                // Experience filter
+                let matchesExperience = true;
+                if (experienceValue !== '') {
+                    if (experienceValue === 'fresher') {
+                        matchesExperience = job.experience === 'fresher' || job.experience === '0-1 years';
+                    } else if (experienceValue === '1-3') {
+                        matchesExperience = job.experience === '1-3 years';
+                    } else if (experienceValue === '3-6') {
+                        matchesExperience = job.experience === '3-6 years';
+                    } else if (experienceValue === '6-10') {
+                        matchesExperience = job.experience === '6-10 years';
+                    } else if (experienceValue === '10+') {
+                        matchesExperience = job.experience.includes('10+');
+                    }
+                }
+                
+                // Category filter
+                const matchesCategory = categoryValue === '' || job.category === categoryValue;
+                
+                // Salary filter - extract numeric value from salary string
+                const salaryMatch = job.salary.match(/₹(\d+,\d+,\d+)/);
+                let jobSalary = 0;
+                if (salaryMatch) {
+                    // Convert "8,00,000" to 8.0 LPA
+                    const salaryNum = parseInt(salaryMatch[1].replace(/,/g, ''));
+                    jobSalary = salaryNum / 100000; // Convert to LPA
+                }
+                const matchesSalary = jobSalary <= salaryFilterValue;
+                
+                return matchesSearch && matchesLocation && matchesWorkMode && matchesExperience && matchesCategory && matchesSalary;
+            });
+            
+            renderJobListings();
+        }
+
+        // Show job details modal
+        function showJobDetails(jobId) {
+            const job = jobs.find(job => job.id === jobId);
+            if (!job) return;
+            
+            currentJobId = jobId;
+            
+            // Update modal content
+            document.getElementById('modalJobTitle').textContent = job.title;
+            document.getElementById('modalJobCompany').textContent = job.company;
+            document.getElementById('modalJobLocation').textContent = job.location;
+            document.getElementById('modalJobType').textContent = job.type;
+            document.getElementById('modalJobSalary').textContent = job.salary;
+            document.getElementById('modalJobExperience').textContent = job.experience;
+            document.getElementById('modalJobDescription').innerHTML = job.description;
+            
+            // Update save button state
+            const isSaved = savedJobs.includes(jobId);
+            saveJobBtn.innerHTML = `<i class="${isSaved ? 'fas' : 'far'} fa-bookmark mr-2"></i> ${isSaved ? 'Saved' : 'Save Job'}`;
+            saveJobBtn.className = isSaved ? 
+                'bg-sky-200 hover:bg-sky-300 text-sky-800 font-medium py-3 px-6 rounded-lg transition duration-300' :
+                'bg-sky-100 hover:bg-sky-200 text-sky-700 font-medium py-3 px-6 rounded-lg transition duration-300';
+            
+            // Show modal
+            jobDetailsModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Show apply form modal
+        function showApplyForm() {
+            const job = jobs.find(job => job.id === currentJobId);
+            if (!job) return;
+            
+            applyJobTitle.textContent = job.title;
+            successMessage.classList.remove('active');
+            applyForm.reset();
+            
+            // Reset error states
+            resetFormErrors();
+            
+            applyFormModal.classList.add('active');
+            jobDetailsModal.classList.remove('active');
+        }
+
+        // Hide all modals
+        function hideAllModals() {
+            jobDetailsModal.classList.remove('active');
+            applyFormModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Toggle saved job
+        function toggleSavedJob(jobId) {
+            const index = savedJobs.indexOf(jobId);
+            
+            if (index === -1) {
+                savedJobs.push(jobId);
+            } else {
+                savedJobs.splice(index, 1);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('savedJobs', JSON.stringify(savedJobs));
+            
+            // Update UI
+            updateSavedJobsDisplay();
+            
+            // If job details modal is open, update save button
+            if (currentJobId === jobId) {
+                const isSaved = savedJobs.includes(jobId);
+                saveJobBtn.innerHTML = `<i class="${isSaved ? 'fas' : 'far'} fa-bookmark mr-2"></i> ${isSaved ? 'Saved' : 'Save Job'}`;
+                saveJobBtn.className = isSaved ? 
+                    'bg-sky-200 hover:bg-sky-300 text-sky-800 font-medium py-3 px-6 rounded-lg transition duration-300' :
+                    'bg-sky-100 hover:bg-sky-200 text-sky-700 font-medium py-3 px-6 rounded-lg transition duration-300';
+            }
+            
+            // Re-render job listings to update save icons
+            renderJobListings();
+        }
+
+        // Validate form
+        function validateForm() {
+            let isValid = true;
+            
+            // Reset all errors
+            resetFormErrors();
+            
+            // Validate first name
+            if (!firstNameInput.value.trim()) {
+                showError('firstNameError', 'Please enter your first name');
+                firstNameInput.classList.add('error-input');
+                isValid = false;
+            }
+            
+            // Validate last name
+            if (!lastNameInput.value.trim()) {
+                showError('lastNameError', 'Please enter your last name');
+                lastNameInput.classList.add('error-input');
+                isValid = false;
+            }
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailInput.value.trim() || !emailRegex.test(emailInput.value)) {
+                showError('emailError', 'Please enter a valid email address');
+                emailInput.classList.add('error-input');
+                isValid = false;
+            }
+            
+            // Validate phone (Indian phone number)
+            const phoneRegex = /^[6-9]\d{9}$/;
+            const phoneDigits = phoneInput.value.replace(/\D/g, '');
+            if (!phoneDigits || !phoneRegex.test(phoneDigits)) {
+                showError('phoneError', 'Please enter a valid 10-digit Indian phone number');
+                phoneInput.classList.add('error-input');
+                isValid = false;
+            }
+            
+            // Validate expected CTC
+            const ctcRegex = /^\d+(\.\d{1,2})?$/;
+            if (!expectedCTCInput.value.trim() || !ctcRegex.test(expectedCTCInput.value)) {
+                expectedCTCInput.classList.add('error-input');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        // Show error message
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        // Reset all form errors
+        function resetFormErrors() {
+            const errorElements = document.querySelectorAll('[id$="Error"]');
+            errorElements.forEach(element => {
+                element.classList.add('hidden');
+            });
+            
+            const errorInputs = document.querySelectorAll('.error-input');
+            errorInputs.forEach(input => {
+                input.classList.remove('error-input');
+            });
+        }
+
+        // Simulate resume parsing and autofill
+        function parseResumeAndAutofill(file) {
+            // This is a simulation - in a real app, you would parse the resume file
+            // Here we simulate extracting information from a resume
+            
+            // Sample resume data (simulated extraction)
+            const resumeData = {
+                firstName: "Rahul",
+                lastName: "Sharma",
+                email: "rahul.sharma@example.com",
+                phone: "9876543210",
+                currentLocation: "Bangalore",
+                totalExperience: "3-6",
+                currentCTC: "8.5",
+                expectedCTC: "12",
+                noticePeriod: "30",
+                skills: "JavaScript, React, Node.js, HTML, CSS, MongoDB, Express.js",
+                coverLetter: "I am a passionate developer with 4 years of experience in building web applications. I have worked on several projects using the MERN stack and have strong problem-solving skills. I'm excited about the opportunity to contribute to your team."
+            };
+            
+            // Auto-fill the form with extracted data
+            firstNameInput.value = resumeData.firstName;
+            lastNameInput.value = resumeData.lastName;
+            emailInput.value = resumeData.email;
+            phoneInput.value = resumeData.phone;
+            currentLocationInput.value = resumeData.currentLocation;
+            totalExperienceInput.value = resumeData.totalExperience;
+            currentCTCInput.value = resumeData.currentCTC;
+            expectedCTCInput.value = resumeData.expectedCTC;
+            noticePeriodInput.value = resumeData.noticePeriod;
+            skillsInput.value = resumeData.skills;
+            coverLetterInput.value = resumeData.coverLetter;
+            resumeInput.value = file.name;
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm';
+            successDiv.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Resume parsed successfully! Form auto-filled.`;
+            
+            // Remove any previous success message
+            const prevSuccess = document.querySelector('.resume-success-message');
+            if (prevSuccess) prevSuccess.remove();
+            
+            successDiv.classList.add('resume-success-message');
+            resumeDropZone.parentNode.insertBefore(successDiv, resumeDropZone.nextSibling);
+            
+            // Remove success message after 5 seconds
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 5000);
+        }
+
+        // Handle form submission
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            // Simulate form submission
+            setTimeout(() => {
+                successMessage.classList.add('active');
+                
+                // Reset form after successful submission
+                setTimeout(() => {
+                    applyForm.reset();
+                    hideAllModals();
+                    
+                    // Show success message for a moment
+                    setTimeout(() => {
+                        successMessage.classList.remove('active');
+                    }, 3000);
+                }, 2000);
+            }, 1000);
+        }
+
+        // Toggle filter section visibility
+        function toggleFilterSection() {
+            if (filterSection.classList.contains('collapsed')) {
+                filterSection.classList.remove('collapsed');
+                filterSection.classList.add('expanded');
+                filterToggleIcon.classList.remove('fa-chevron-down');
+                filterToggleIcon.classList.add('fa-chevron-up');
+            } else {
+                filterSection.classList.remove('expanded');
+                filterSection.classList.add('collapsed');
+                filterToggleIcon.classList.remove('fa-chevron-up');
+                filterToggleIcon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            searchInput.value = '';
+            locationFilter.value = '';
+            workModeFilter.value = '';
+            experienceFilter.value = '';
+            categoryFilter.value = '';
+            salaryRange.value = 50;
+            salaryFilterValue = 50;
+            updateSalaryDisplay();
+            filterJobs();
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            // Search and filter events
+            searchBtn.addEventListener('click', filterJobs);
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') filterJobs();
+            });
+            
+            // Filter change events
+            locationFilter.addEventListener('change', filterJobs);
+            workModeFilter.addEventListener('change', filterJobs);
+            experienceFilter.addEventListener('change', filterJobs);
+            categoryFilter.addEventListener('change', filterJobs);
+            applyFiltersBtn.addEventListener('click', filterJobs);
+            clearFiltersBtn.addEventListener('click', clearAllFilters);
+            
+            // Salary range slider
+            salaryRange.addEventListener('input', function() {
+                salaryFilterValue = parseInt(this.value);
+                updateSalaryDisplay();
+            });
+            
+            // Toggle filters button
+            toggleFiltersBtn.addEventListener('click', toggleFilterSection);
+            
+            // Saved jobs button
+            savedJobsBtn.addEventListener('click', () => {
+                document.getElementById('saved').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Modal close buttons
+            closeModalBtn.addEventListener('click', hideAllModals);
+            closeApplyModalBtn.addEventListener('click', hideAllModals);
+            cancelApplyBtn.addEventListener('click', hideAllModals);
+            
+            // Apply now button
+            applyNowBtn.addEventListener('click', showApplyForm);
+            
+            // Save job button
+            saveJobBtn.addEventListener('click', () => {
+                if (currentJobId) {
+                    toggleSavedJob(currentJobId);
+                }
+            });
+            
+            // Resume upload functionality
+            browseResumeBtn.addEventListener('click', () => {
+                resumeUpload.click();
+            });
+            
+            resumeUpload.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    
+                    // Check file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size should be less than 5MB');
+                        return;
+                    }
+                    
+                    // Check file type
+                    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please upload a PDF, DOC or DOCX file');
+                        return;
+                    }
+                    
+                    // Simulate resume parsing
+                    parseResumeAndAutofill(file);
+                }
+            });
+            
+            // Drag and drop for resume upload
+            resumeDropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            resumeDropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            resumeDropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    const file = e.dataTransfer.files[0];
+                    
+                    // Check file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size should be less than 5MB');
+                        return;
+                    }
+                    
+                    // Check file type
+                    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please upload a PDF, DOC or DOCX file');
+                        return;
+                    }
+                    
+                    // Simulate resume parsing
+                    parseResumeAndAutofill(file);
+                }
+            });
+            
+            // Form submission
+            applyForm.addEventListener('submit', handleFormSubmit);
+            
+            // Click outside modal to close
+            window.addEventListener('click', (e) => {
+                if (e.target === jobDetailsModal || e.target === applyFormModal) {
+                    hideAllModals();
+                }
+            });
+            
+            // Event delegation for dynamic elements
+            document.addEventListener('click', (e) => {
+                // View details button
+                if (e.target.closest('.view-details-btn') || e.target.closest('.view-saved-btn')) {
+                    const button = e.target.closest('.view-details-btn') || e.target.closest('.view-saved-btn');
+                    const jobId = parseInt(button.getAttribute('data-id'));
+                    showJobDetails(jobId);
+                }
+                
+                // Save job button
+                if (e.target.closest('.save-job-btn')) {
+                    const button = e.target.closest('.save-job-btn');
+                    const jobId = parseInt(button.getAttribute('data-id'));
+                    toggleSavedJob(jobId);
+                }
+                
+                // Remove saved job button
+                if (e.target.closest('.remove-saved-btn')) {
+                    const button = e.target.closest('.remove-saved-btn');
+                    const jobId = parseInt(button.getAttribute('data-id'));
+                    toggleSavedJob(jobId);
+                }
+                
+                // Reset filters button
+                if (e.target.closest('#resetFilters')) {
+                    clearAllFilters();
+                }
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
